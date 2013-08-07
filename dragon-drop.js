@@ -243,6 +243,14 @@ angular.module('btford.dragon-drop', []).
             mouseReleased = false;
           });
 
+          elt.bind('change', function (ev) {
+            mouseReleased = true;
+          });
+
+          elt.bind('input', function (ev) {
+            mouseReleased = true;
+          });
+
           elt.bind('mousemove', function(ev) {
             if(dragValue||mouseReleased){
               return;
