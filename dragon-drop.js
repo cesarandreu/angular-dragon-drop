@@ -44,7 +44,20 @@ angular.module('btford.dragon-drop', []).
       mouseReleased = true,
       floaty,
       offsetX,
-      offsetY;
+      offsetY,
+      fixed;
+
+    var isFixed = function(element) {
+      var parents = element.parents(), i, len = parents.length;
+      for (i = 0; i < len; i++) {
+        if (parents[i].hasAttribute('btf-dragon-fixed')) {
+          return true;
+        } else if (parents[i].hasAttribute('btf-dragon')) {
+          return false;
+        }
+      }
+      return false;
+    };
 
     var drag = function (ev) {
       var x = ev.clientX - offsetX,
@@ -241,14 +254,13 @@ angular.module('btford.dragon-drop', []).
 
           elt.bind('mousedown', function (ev) {
             mouseReleased = false;
-          });
 
-          elt.bind('change', function (ev) {
-            mouseReleased = true;
-          });
+            if (isFixed(angular.element(ev.target))) {
+              fixed = true;
+            } else {
+              fixed = false;
+            }
 
-          elt.bind('input', function (ev) {
-            mouseReleased = true;
           });
 
           elt.bind('mousemove', function(ev) {
@@ -256,6 +268,9 @@ angular.module('btford.dragon-drop', []).
               return;
             }
 
+            if(isFixed(angular.element(ev.target)) || fixed){
+              return;
+            }
             
             // find the right parent
             var originElement = angular.element(ev.target);
