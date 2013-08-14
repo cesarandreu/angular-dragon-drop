@@ -185,7 +185,10 @@ angular.module('btford.dragon-drop', []).
             }
             totalHeight += dropArea[0].children[i].getClientRects()[j].height;
           }
-          positions.push(smallestTop + (totalHeight / 2));
+          if (dropArea[0].children[i].attributes['btf-dragon-position'] !== undefined) {
+            positions.push(smallestTop + (totalHeight / 2));
+          }
+          
         }
 
         positions.push(max);
