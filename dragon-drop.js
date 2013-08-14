@@ -77,9 +77,15 @@ angular.module('btford.dragon-drop', []).
       }
     };
 
-    var add = function (collection, item, key) {
+    var add = function (collection, item, key, position) {
       if (collection instanceof Array) {
-        collection.push(item);
+        var pos;
+        if (position === 0 || position) {
+          pos = position;
+        } else {
+          pos = collection.length;
+        }
+        collection.splice(pos, 0, item);
       } else {
         collection[key] = item;
       }
@@ -160,6 +166,40 @@ angular.module('btford.dragon-drop', []).
         dropArea = dropArea.parent();
       }
 
+      if (dropArea.attr('btf-dragon-sortable') !== undefined) {
+
+        var min = dropArea[0].getBoundingClientRect().top;
+        var max = dropArea[0].getBoundingClientRect().bottom;
+        var positions = [];
+        var position;
+
+        positions.push(min);
+
+        var i, j, leni, lenj;
+        for (i = 0, leni = dropArea[0].children.length; i < leni; i++) {
+          var totalHeight = 0;
+          var smallestTop = Number.POSITIVE_INFINITY;
+          for (j = 0, lenj = dropArea[0].children[i].getClientRects().length; j < lenj; j++) {
+            if (smallestTop > dropArea[0].children[i].getClientRects()[j].top) {
+              smallestTop = dropArea[0].children[i].getClientRects()[j].top;
+            }
+            totalHeight += dropArea[0].children[i].getClientRects()[j].height;
+          }
+          positions.push(smallestTop + (totalHeight / 2));
+        }
+
+        positions.push(max);
+
+        i = 0;
+        while (i < positions.length) {
+          if (positions[i] <= ev.clientY) {
+            position = i;
+          }
+          i++;
+        }
+
+      }
+
       if (dropArea.length > 0) {
         var expression = dropArea.attr('btf-dragon');
         var targetScope = dropArea.scope();
@@ -167,7 +207,7 @@ angular.module('btford.dragon-drop', []).
 
         var targetList = targetScope.$eval(match[2]);
         targetScope.$apply(function () {
-          add(targetList, dragValue, dragKey);
+          add(targetList, dragValue, dragKey, position);
         });
       } else if (!dragDuplicate && !dragEliminate) {
         // no dropArea here
@@ -218,11 +258,16 @@ angular.module('btford.dragon-drop', []).
         var child = template.clone();
         child.attr('ng-repeat', expression);
 
+        if (container.attr('btf-dragon-sortable') !== undefined) {
+          child.attr('btf-dragon-position', '{{$index}}');
+        }
+
         container.html('');
         container.append(child);
 
         var duplicate = container.attr('btf-double-dragon') !== undefined;
-        var eliminate = container.attr('btf-dragon-eliminate') !== undefined; 
+        var eliminate = container.attr('btf-dragon-eliminate') !== undefined;
+
 
         return function (scope, elt, attr) {
 
